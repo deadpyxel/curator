@@ -9,9 +9,10 @@ import (
 
 type User struct {
 	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"namme"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Name      string    `json:"namme"`
+	ApiKey    string    `json:"api_key"`
 }
 
 func dbUserToUser(dbUser database.User) User {
@@ -20,5 +21,6 @@ func dbUserToUser(dbUser database.User) User {
 		Name:      dbUser.Name,
 		CreatedAt: dbUser.CreatedAt,
 		UpdatedAt: dbUser.UpdatedAt,
+		ApiKey:    dbUser.ApiKey,
 	}
 }
