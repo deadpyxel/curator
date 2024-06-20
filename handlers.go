@@ -10,14 +10,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func readinessEndpoint(w http.ResponseWriter, r *http.Request) {
+func handlerLiveness(w http.ResponseWriter, r *http.Request) {
 	type apiOk struct {
 		Status string `json:"status"`
 	}
 	respondWithJSON(w, http.StatusOK, apiOk{Status: http.StatusText(http.StatusOK)})
 }
 
-func errorEndpoint(w http.ResponseWriter, r *http.Request) {
+func handlerErrorTest(w http.ResponseWriter, r *http.Request) {
 	respondWithError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 }
 

@@ -45,8 +45,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /v1/healthz", readinessEndpoint)
-	mux.HandleFunc("GET /v1/err", errorEndpoint)
+	mux.HandleFunc("GET /v1/healthz", handlerLiveness)
+	mux.HandleFunc("GET /v1/err", handlerErrorTest)
 	mux.HandleFunc("POST /v1/users", apiCfg.handlerCreateUser)
 	logMux := logMiddleware(mux)
 

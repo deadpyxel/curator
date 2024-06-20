@@ -13,7 +13,7 @@ func TestReadinessEndpoint(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(readinessEndpoint)
+	handler := http.HandlerFunc(handlerLiveness)
 
 	handler.ServeHTTP(rr, req)
 
