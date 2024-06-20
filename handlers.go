@@ -19,6 +19,7 @@ func handlerLiveness(w http.ResponseWriter, r *http.Request) {
 
 func handlerErrorTest(w http.ResponseWriter, r *http.Request) {
 	respondWithError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	return
 }
 
 func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -30,6 +31,7 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
 	}
 
 	user, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
