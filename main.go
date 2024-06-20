@@ -1,13 +1,20 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/deadpyxel/curator/internal/database"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq" // Import postgres drive and use side effects
 )
+
+type apiConfig struct {
+	DB *database.Queries
+}
 
 func main() {
 	err := godotenv.Load()
@@ -15,17 +22,39 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	serverPort := os.Getenv("PORT")
+	if serverPort == "" {
+		log.Fatal("PORT is not defined")
+	}
+
+	connString := os.Getenv("CONN_STRING")
+	if connString == "" {
+		log.Fatal("CONN_STRING is not defined")
+	}
+
+	dbConn, err := sql.Open("postgres", connString)
+	if err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+
+	dbQueries := database.New(dbConn)
+
+	apiCfg := apiConfig{
+		DB: dbQueries,
+	}
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /v1/healthz", readinessEndpoint)
 	mux.HandleFunc("GET /v1/err", errorEndpoint)
+	mux.HandleFunc("POST /v1/users", apiCfg.handlerCreateUser)
 	logMux := logMiddleware(mux)
 
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
+		Addr:    fmt.Sprintf(":%s", serverPort),
 		Handler: logMux,
 	}
 
-	fmt.Printf("Starting server on port %s", os.Getenv("PORT"))
+	fmt.Printf("Starting server on port %s", serverPort)
 	log.Fatal(httpServer.ListenAndServe())
 }
