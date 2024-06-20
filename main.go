@@ -48,6 +48,7 @@ func main() {
 	mux.HandleFunc("GET /v1/healthz", handlerLiveness)
 	mux.HandleFunc("GET /v1/err", handlerErrorTest)
 	mux.HandleFunc("POST /v1/users", apiCfg.handlerCreateUser)
+	mux.HandleFunc("GET /v1/users", apiCfg.handlerGetUser)
 	logMux := logMiddleware(mux)
 
 	httpServer := &http.Server{
@@ -55,6 +56,6 @@ func main() {
 		Handler: logMux,
 	}
 
-	fmt.Printf("Starting server on port %s", serverPort)
+	fmt.Printf("Starting server on port %s\n\n", serverPort)
 	log.Fatal(httpServer.ListenAndServe())
 }
