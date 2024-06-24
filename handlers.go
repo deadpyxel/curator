@@ -91,7 +91,7 @@ func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Reques
 		UserID:    dbUser.ID,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error occured when creating feed follow: %v", err))
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error occurred when creating feed follow: %v", err))
 		return
 	}
 
