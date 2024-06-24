@@ -54,6 +54,7 @@ func main() {
 	// Feeds
 	mux.HandleFunc("POST /v1/feeds", apiCfg.authMiddleware(apiCfg.handlerCreateFeed))
 	mux.HandleFunc("GET /v1/feeds", apiCfg.handlerGetFeeds)
+	mux.HandleFunc("POST /v1/feed_follows", apiCfg.authMiddleware(apiCfg.handlerCreateFeedFollow))
 	logMux := logMiddleware(mux)
 
 	httpServer := &http.Server{
