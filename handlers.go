@@ -124,5 +124,19 @@ func (apiCfg *apiConfig) handlerCreateFeedFollow(w http.ResponseWriter, r *http.
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, dbFollowToFeedFollow(feedFollow))
+	respondWithJSON(w, http.StatusCreated, dbFeedFollowToFeedFollow(feedFollow))
+}
+
+func (apiCfg *apiConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http.Request, dbUser database.User) {
+	feedFollows, err := apiCfg.DB.GetFeedFollowForUser(r.Context(), dbUser.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, "The user is not following any feeds")
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to retrieve feeds followed by the user: %v", err))
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, dbFeedFollowsToFeedFollows(feedFollows))
 }
