@@ -45,10 +45,13 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// Heathcheck
 	mux.HandleFunc("GET /v1/healthz", handlerLiveness)
 	mux.HandleFunc("GET /v1/err", handlerErrorTest)
+	// Users
 	mux.HandleFunc("POST /v1/users", apiCfg.handlerCreateUser)
 	mux.HandleFunc("GET /v1/users", apiCfg.authMiddleware(apiCfg.handlerGetUser))
+	// Feeds
 	mux.HandleFunc("POST /v1/feeds", apiCfg.authMiddleware(apiCfg.handlerCreateFeed))
 	mux.HandleFunc("GET /v1/feeds", apiCfg.handlerGetFeeds)
 	logMux := logMiddleware(mux)

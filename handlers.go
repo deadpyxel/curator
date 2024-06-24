@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// handlerLiveness responds with a JSON message containing the status of the API
 func handlerLiveness(w http.ResponseWriter, r *http.Request) {
 	type apiOk struct {
 		Status string `json:"status"`
@@ -19,6 +20,7 @@ func handlerLiveness(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, apiOk{Status: http.StatusText(http.StatusOK)})
 }
 
+// handlerErrorTest is a test endpoint to verify that error messages can be shown to the client.
 func handlerErrorTest(w http.ResponseWriter, r *http.Request) {
 	respondWithError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 }
@@ -27,6 +29,7 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	type parameters struct {
 		Name string `json:"name"`
 	}
+	// Decode JSON contents for processing
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
 	err := decoder.Decode(&params)
@@ -35,6 +38,7 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	// Create new user on database
 	user, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		ID:        uuid.New(),
 		Name:      params.Name,
