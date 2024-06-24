@@ -1,14 +1,11 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/deadpyxel/curator/internal/auth"
 	"github.com/deadpyxel/curator/internal/database"
 	"github.com/google/uuid"
 )
@@ -50,22 +47,6 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	respondWithJSON(w, http.StatusCreated, dbUserToUser(user))
 }
 
-func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request) {
-	apiKey, err := auth.GetApiKey(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, fmt.Sprintf("Auth Error: %v", err))
-		return
-	}
-
-	dbUser, err := apiCfg.DB.GetUserByApiKey(r.Context(), apiKey)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			respondWithError(w, http.StatusNotFound, "User not found")
-			return
-		}
-		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failure to fetch user information: %v", err))
-		return
-	}
-
+func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, dbUser database.User) {
 	respondWithJSON(w, http.StatusOK, dbUserToUser(dbUser))
 }
