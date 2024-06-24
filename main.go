@@ -49,6 +49,7 @@ func main() {
 	mux.HandleFunc("GET /v1/err", handlerErrorTest)
 	mux.HandleFunc("POST /v1/users", apiCfg.handlerCreateUser)
 	mux.HandleFunc("GET /v1/users", apiCfg.authMiddleware(apiCfg.handlerGetUser))
+	mux.HandleFunc("POST /v1/feeds", apiCfg.authMiddleware(apiCfg.handlerCreateFeed))
 	logMux := logMiddleware(mux)
 
 	httpServer := &http.Server{

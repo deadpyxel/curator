@@ -50,3 +50,32 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, dbUser database.User) {
 	respondWithJSON(w, http.StatusOK, dbUserToUser(dbUser))
 }
+
+func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Request, dbUser database.User) {
+	type parameters struct {
+		Name string `json:"name"`
+		Url  string `json:"url"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	params := parameters{}
+	err := decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	feed, err := apiCfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
+		ID:        uuid.New(),
+		Name:      params.Name,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		Url:       params.Url,
+		UserID:    dbUser.ID,
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Could not create new user: %v", err))
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, dbFeedToFeed(feed))
+}
