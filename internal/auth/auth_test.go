@@ -30,9 +30,17 @@ func TestGetApiKey(t *testing.T) {
 			expectedError: errors.New("No authentication information found."),
 		},
 		{
-			name: "When is a malformed Authorization header returns no key and matching error",
+			name: "When is a malformed Authorization header (not two components) returns no key and matching error",
 			headers: http.Header{
 				"Authorization": []string{"token"},
+			},
+			expectedKey:   "",
+			expectedError: errors.New("Malformed auth header"),
+		},
+		{
+			name: "When is a malformed Authorization header (wrong spec) returns no key and matching error",
+			headers: http.Header{
+				"Authorization": []string{"APIKEY token"},
 			},
 			expectedKey:   "",
 			expectedError: errors.New("Malformed auth header"),
