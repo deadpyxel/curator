@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/deadpyxel/curator/internal/database"
@@ -185,4 +186,35 @@ func (apiCfg *apiConfig) handlerDeleteFeedFollow(w http.ResponseWriter, r *http.
 	}
 
 	respondWithJSON(w, http.StatusNoContent, struct{}{})
+}
+
+func (apiCfg *apiConfig) handlerGetPostsByUser(w http.ResponseWriter, r *http.Request, dbUser database.User) {
+	queryLimit := 10 // set default query limit to 10 posts
+	// If limit was specified as a query param, use that limit instead
+	queryParams := r.URL.Query()
+	limitStr := queryParams.Get("limit")
+	if limitStr != "" {
+		parsedLimit, err := strconv.Atoi(limitStr)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Unable to parse limit query param")
+			return
+		}
+		queryLimit = parsedLimit
+	}
+
+	posts, err := apiCfg.DB.GetPostsByUser(r.Context(), database.GetPostsByUserParams{
+		UserID: dbUser.ID,
+		Limit:  int32(queryLimit),
+	})
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, "No posts found for this user")
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to retrieve posts: %v", err))
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, dbPostsToPosts(posts))
 }
