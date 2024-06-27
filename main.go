@@ -19,22 +19,22 @@ type apiConfig struct {
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logger.Fatal("Error loading .env file", "error", err)
 	}
 
 	serverPort := os.Getenv("PORT")
 	if serverPort == "" {
-		log.Fatal("PORT is not defined")
+		logger.Fatal("PORT is not defined")
 	}
 
 	connString := os.Getenv("CONN_STRING")
 	if connString == "" {
-		log.Fatal("CONN_STRING is not defined")
+		logger.Fatal("CONN_STRING is not defined")
 	}
 
 	dbConn, err := sql.Open("postgres", connString)
 	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
+		logger.Fatal("Failed to connect to the database", "error", err)
 	}
 
 	dbQueries := database.New(dbConn)
@@ -64,6 +64,6 @@ func main() {
 		Handler: logMux,
 	}
 
-	fmt.Printf("Starting server on port %s\n\n", serverPort)
+	logger.Info(fmt.Sprintf("Starting server on port %s", serverPort))
 	log.Fatal(httpServer.ListenAndServe())
 }

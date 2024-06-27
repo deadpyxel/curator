@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/deadpyxel/curator/internal/auth"
@@ -13,7 +12,7 @@ import (
 
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s - %s", r.Method, r.URL.Path, r.UserAgent())
+		logger.Info(fmt.Sprintf("INCOMING %s request on %s using %s", r.Method, r.URL.Path, r.UserAgent()), "method", r.Method, "path", r.URL.Path, "userAgent", r.UserAgent())
 		next.ServeHTTP(w, r)
 	})
 }
