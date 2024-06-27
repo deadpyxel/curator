@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/deadpyxel/curator/internal/database"
+	"github.com/google/uuid"
 )
 
 type RSSFeed struct {
@@ -95,7 +96,48 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 	}
 
 	for _, item := range rssFeed.Channel.Item {
-		logger.Info(fmt.Sprintf("New post found on %s with title %v", feed.Name, item.Title), "feedID", feed.ID)
+		// Check in the database if the post already exists by its unique URL
+		post, err := db.FindPostByURL(context.Background(), item.Link)
+		if err != nil {
+			// If there was an error, just log it and skip this post
+			logger.Error("Error checking if post already exists", "error", err)
+			continue
+		}
+		// If post tile is not empty and the creation data is not zero, we assume the post is already on the database
+		if post.Title != "" && !post.CreatedAt.IsZero() {
+			logger.Debug("Post already present, skipping", "postID", post.ID)
+			continue
+		}
+
+		// Since description can be null, we check for that before database operations start
+		desc := sql.NullString{}
+		if item.Description != "" {
+			desc.String = item.Description
+			desc.Valid = true
+		}
+
+		// TODO: Add support for more data formats
+		pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			logger.Error("Could not parse published date", "error", err, "pubDate", item.PubDate)
+			continue
+		}
+
+		_, err = db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now().UTC(),
+			UpdatedAt:   time.Now().UTC(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: desc,
+			PublishedAt: pubDate,
+			FeedID:      feed.ID,
+		})
+
+		if err != nil {
+			logger.Error("Could not create post.", "feedID", feed.ID, "url", item.Link, "error", err)
+			continue
+		}
 	}
 	logger.Info("Feed scrapping complete", "feedID", feed.ID, "numPosts", len(rssFeed.Channel.Item))
 }
