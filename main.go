@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/deadpyxel/curator/internal/database"
 	"github.com/joho/godotenv"
@@ -42,6 +43,9 @@ func main() {
 	apiCfg := apiConfig{
 		DB: dbQueries,
 	}
+
+	// Start scrapping feed data
+	go startFeedScrapping(dbQueries, 8, time.Minute)
 
 	mux := http.NewServeMux()
 
